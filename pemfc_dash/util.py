@@ -7,4 +7,3 @@ def clear_cache(tmpdir):
         shutil.rmtree(tmpdir)
     os.makedirs(tmpdir)
 
-
