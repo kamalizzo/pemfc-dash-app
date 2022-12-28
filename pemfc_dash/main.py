@@ -22,22 +22,16 @@ import pemfc_gui.input as gui_input
 
 from . import dash_functions as df, dash_layout as dl, \
     dash_modal as dm
-from .dash_tabs import tab3
-from .dash_tabs import tab1, tab2, tab4, tab6, tab5
 from pemfc_dash.dash_app import app
-
-tab_list = [tab1.tab_layout, tab2.tab_layout, tab3.tab_layout,
-            tab4.tab_layout, tab5.tab_layout, tab6.tab_layout]
 
 server = app.server
 
 app._favicon = 'logo-zbt.ico'
 app.title = 'PEMFC Model'
 
-app.layout = dbc.Container(
-    [html.Div(  # HEADER
-        [
-         html.Div(
+app.layout = dbc.Container([
+    html.Div([  # HEADER (Header Row)
+        html.Div(  # Logo
             html.Div(
                 html.Img(
                     src=app.get_asset_url("logo-zbt.png"),
@@ -51,241 +45,229 @@ app.layout = dbc.Container(
                        'align-items': 'center'}
             ),
             className='col-12 col-lg-4 mb-2'
-         ),
-         html.Div(
-             html.Div(
-                 html.H3("Fuel Cell Stack Model",
-                         style={"margin": "auto",
-                                "min-height": "47px",
-                                "font-weight": "bold",
-                                "-webkit-text-shadow-width": "1px",
-                                "-webkit-text-shadow-color": "#aabad6",
-                                "color": "#0062af",
-                                "font-size": "40px",
-                                "width": "auto",
-                                "text-align": "center",
-                                "vertical-align": "middle"}),
-                 className="pretty_container h-100", id="title",
-                 style={'justify-content': 'center', 'align-items': 'center',
-                        'display': 'flex'}),
-             # width=8, align='center',
-             style={'justify-content': 'space-evenly'},
-             className='col-12 col-lg-8 mb-2'),
-        ],
+        ),
+        html.Div(  # Title
+            html.Div(
+                html.H3("Fuel Cell Stack Model",
+                        style={"margin": "auto",
+                               "min-height": "47px",
+                               "font-weight": "bold",
+                               "-webkit-text-shadow-width": "1px",
+                               "-webkit-text-shadow-color": "#aabad6",
+                               "color": "#0062af",
+                               "font-size": "40px",
+                               "width": "auto",
+                               "text-align": "center",
+                               "vertical-align": "middle"}),
+                className="pretty_container h-100", id="title",
+                style={'justify-content': 'center', 'align-items': 'center',
+                       'display': 'flex'}),
+            style={'justify-content': 'space-evenly'},
+            className='col-12 col-lg-8 mb-2'),
+    ],
         id="header",
         className='row'
-        ),
-     dcc.Store(id="input_data"),
-     dbc.Spinner(dcc.Store(id='result_data_store'), fullscreen=True,
-                 spinner_class_name='loading_spinner',
-                 fullscreen_class_name='loading_spinner_bg'),
-     dcc.Store(id='signal'),
+    ),
+    dcc.Store(id="input_data"),
+    dbc.Spinner(dcc.Store(id='result_data_store'), fullscreen=True,
+                spinner_class_name='loading_spinner',
+                fullscreen_class_name='loading_spinner_bg'),
+    dcc.Store(id='signal'),
 
-     # empty Div to trigger javascript file for graph resizing
-     html.Div(id="output-clientside"),
-     # modal for any warning
-     dm.create_modal(),
-     html.Div(  # MIDDLE
-         [html.Div(  # LEFT MIDDLE
-             [html.Div(  # LEFT MIDDLE MIDDLE
-                  [dl.tab_container(
-                          tab_list, label=
-                          [k['title'] for k in gui_input.main_frame_dicts],
-                          ids=['tab{}'.format(num + 1) for num in
-                               range(len(gui_input.main_frame_dicts))])],
-              id='setting_container',  # style={'flex': '1'}
-              ),
-              html.Div(   # LEFT MIDDLE BOTTOM
-                  [html.Div(
-                       [html.Div(
-                           [
-                            dcc.Upload(id='upload-file',
-                                       children=html.Button(
-                                           'Load Settings',
-                                           id='load-button',
-                                           className='settings_button',
-                                           style={'display': 'flex'})),
-                            dcc.Download(id="savefile-json"),
-                            html.Button('Save Settings', id='save-button',
-                                        className='settings_button',
-                                        style={'display': 'flex'}),
-                            html.Button('Run Simulation', id='run_button',
-                                        className='settings_button',
-                                        style={'display': 'flex'})
+    # empty Div to trigger javascript file for graph resizing
+    html.Div(id="output-clientside"),
+    # modal for any warning
+    dm.create_modal(),
+    html.Div(  # MIDDLE
+        [html.Div(  # LEFT MIDDLE / (Menu Column)
+            [html.Div(  # LEFT MIDDLE MIDDLE (Tabs with Settings)
+                [dl.tab_container(gui_input.main_frame_dicts)],
+                id='setting_container',  # style={'flex': '1'}
+            ),
+                html.Div(  # LEFT MIDDLE BOTTOM (Buttons)
+                    [html.Div(
+                        [html.Div(
+                            [
+                                dcc.Upload(id='upload-file',
+                                           children=html.Button(
+                                               'Load Settings',
+                                               id='load-button',
+                                               className='settings_button',
+                                               style={'display': 'flex'})),
+                                dcc.Download(id="savefile-json"),
+                                html.Button('Save Settings', id='save-button',
+                                            className='settings_button',
+                                            style={'display': 'flex'}),
+                                html.Button('Run Simulation', id='run_button',
+                                            className='settings_button',
+                                            style={'display': 'flex'})
                             ],
-                           style={'display': 'flex',
-                                  'flex-wrap': 'wrap',
-                                  # 'flex-direction': 'column',
-                                  # 'margin': '5px',
-                                  'justify-content': 'space-evenly'}
-                       ),
-                        # dc.collapses
-                       ],
-                       className='neat-spacing')], style={'flex': '1'},
-                  id='load_save_setting', className='pretty_container')],
-             id="left-column", className='col-12 col-lg-4 mb-2'),
-
-          html.Div(  # RIGHT MIDDLE
-              [html.Div(
-                        [html.Div('Global Results', className='title'),
-                            dt.DataTable(id='global_data_table',
-                                         editable=True,
-                                         column_selectable='multi')],
-                        id='div_global_table',
-                        className='pretty_container',
-                        style={'overflow': 'auto'}),
-               html.Div(
-                   [html.Div('Heatmap', className='title'),
-                       html.Div(
-                           [html.Div(
-                               dcc.Dropdown(
-                                   id='dropdown_heatmap',
-                                   placeholder='Select Variable',
-                                   className='dropdown_input'),
-                               id='div_results_dropdown',
-                               # style={'padding': '1px', 'min-width': '200px'}
-                           ),
-                            html.Div(
-                               dcc.Dropdown(id='dropdown_heatmap_2',
-                                            className='dropdown_input',
-                                            style={'visibility': 'hidden'}),
-                               id='div_results_dropdown_2',
-                            )
-                           ],
-                           style={'display': 'flex',
-                                  'flex-direction': 'row',
-                                  'flex-wrap': 'wrap',
-                                  'justify-content': 'left'},
-                       ),
-                    # RIGHT MIDDLE BOTTOM
-                    dbc.Spinner(dcc.Graph(id="heatmap_graph"),
-                                spinner_class_name='loading_spinner',
-                                fullscreen_class_name='loading_spinner_bg'),
-                   ],
-                   id='heatmap_container',
-                   className='graph pretty_container'),
-
-               html.Div(
-                 [html.Div('Plots', className='title'),
-                     html.Div(
-                         [html.Div(
-                             dcc.Dropdown(
-                                 id='dropdown_line',
-                                 placeholder='Select Variable',
-                                 className='dropdown_input'),
-                             id='div_dropdown_line',
-                             # style={'padding': '1px', 'min-width': '200px'}
-                         ),
-                             html.Div(
-                             dcc.Dropdown(id='dropdown_line2',
-                                          className='dropdown_input',
-                                          style={'visibility': 'hidden'}),
-                             id='div_dropdown_line_2',
-                             # style={'padding': '1px', 'min-width': '200px'}
-                             )],
-                         style={'display': 'flex', 'flex-direction': 'row',
-                                'flex-wrap': 'wrap',
-                                'justify-content': 'left'},
-                     ),
-                  html.Div(
-                      [html.Div(
-                          [
-                           dcc.Store(id='append_check'),
-                           html.Div(
-                               [html.Div(
-                                   children=dbc.DropdownMenu(
-                                    id='checklist_dropdown',
-                                    children=[
-                                       dbc.Checklist(
-                                           id='data_checklist',
-                                           # input_checked_class_name='checkbox',
-                                           style={
-                                               'max-height': '400px',
-                                               'overflow': 'auto'})],
-                                    toggle_style={
-                                        'textTransform': 'none',
-                                        'background': '#fff',
-                                        'border': '#ccc',
-                                        'letter-spacing': '0',
-                                        'font-size': '11px',
-                                    },
-                                    align_end=True,
-                                    toggle_class_name='dropdown_input',
-                                    label="Select Cells"),),
-                                html.Button('Clear All', id='clear_all_button',
-                                            className='local_data_buttons'),
-                                html.Button('Select All',
-                                            id='select_all_button',
-                                               className='local_data_buttons'),
-                                html.Button('Export to Table',
-                                            id='export_b',
-                                            className='local_data_buttons'),
-                                html.Button('Append to Table',
-                                            id='append_b',
-                                            className='local_data_buttons'),
-                                html.Button('Clear Table', id='clear_table_b',
-                                            className='local_data_buttons')],
-                               style={
-                                   'display': 'flex',
+                            style={'display': 'flex',
                                    'flex-wrap': 'wrap',
-                                   'margin-bottom': '5px'}
-                           )],
-                           # style={'width': '200px'}
-                       ),
-                       dcc.Store(id='cells_data')],
-                      style={'display': 'flex', 'flex-direction': 'column',
-                             'justify-content': 'left'}),
-                  dbc.Spinner(dcc.Graph(id='line_graph'),
-                              spinner_class_name='loading_spinner',
-                              fullscreen_class_name='loading_spinner_bg')],
-                 className="pretty_container",
-                 style={'display': 'flex', 'flex-direction':
-                        'column', 'justify-content': 'space-evenly'}
-              )],
-              id='right-column', className='col-12 col-lg-8 mb-2')],
-         className="row",
-         style={'justify-content': 'space-evenly'}),
-     # html.Div(
-     #     [],
-     #     style={'position': 'relative',
-     #            'margin': '0 0.05% 0 0.7%'})
-     html.Div(dt.DataTable(id='table', editable=True,
-                           column_selectable='multi'),
-             # columns=[{'filter_options': 'sensitive'}]),
-              id='div_table', style={'overflow': 'auto',
-                                     'position': 'relative',
-                                     # 'margin': '0 0.05% 0 0.7%'
-                                     },
-              className='pretty_container'),
-     html.Div(
-         html.Div(
-            [
+                                   # 'flex-direction': 'column',
+                                   # 'margin': '5px',
+                                   'justify-content': 'space-evenly'}
+                        )],
+                        className='neat-spacing')], style={'flex': '1'},
+                    id='load_save_setting', className='pretty_container')],
+            id="left-column", className='col-12 col-lg-4 mb-2'),
 
-             html.A('Source code:'),
-             html.A('web interface',
-                    href='https://www.github.com/zbt-tools/pemfc-dash-app',
-                    target="_blank"),
-             html.A("fuel cell model",
-                    href='https://www.github.com/zbt-tools/pemfc-core',
-                    target="_blank"),
-            ],
+            html.Div(  # RIGHT MIDDLE  (Result Column)
+                [html.Div(
+                    [html.Div('Global Results', className='title'),
+                     dt.DataTable(id='global_data_table',
+                                  editable=True,
+                                  column_selectable='multi')],
+                    id='div_global_table',
+                    className='pretty_container',
+                    style={'overflow': 'auto'}),
+                    html.Div(
+                        [html.Div('Heatmap', className='title'),
+                         html.Div(
+                             [html.Div(
+                                 dcc.Dropdown(
+                                     id='dropdown_heatmap',
+                                     placeholder='Select Variable',
+                                     className='dropdown_input'),
+                                 id='div_results_dropdown',
+                                 # style={'padding': '1px', 'min-width': '200px'}
+                             ),
+                                 html.Div(
+                                     dcc.Dropdown(id='dropdown_heatmap_2',
+                                                  className='dropdown_input',
+                                                  style={'visibility': 'hidden'}),
+                                     id='div_results_dropdown_2',
+                                 )
+                             ],
+                             style={'display': 'flex',
+                                    'flex-direction': 'row',
+                                    'flex-wrap': 'wrap',
+                                    'justify-content': 'left'},
+                         ),
+                         # RIGHT MIDDLE BOTTOM
+                         dbc.Spinner(dcc.Graph(id="heatmap_graph"),
+                                     spinner_class_name='loading_spinner',
+                                     fullscreen_class_name='loading_spinner_bg'),
+                         ],
+                        id='heatmap_container',
+                        className='graph pretty_container'),
+
+                    html.Div(
+                        [html.Div('Plots', className='title'),
+                         html.Div(
+                             [html.Div(
+                                 dcc.Dropdown(
+                                     id='dropdown_line',
+                                     placeholder='Select Variable',
+                                     className='dropdown_input'),
+                                 id='div_dropdown_line',
+                                 # style={'padding': '1px', 'min-width': '200px'}
+                             ),
+                                 html.Div(
+                                     dcc.Dropdown(id='dropdown_line2',
+                                                  className='dropdown_input',
+                                                  style={'visibility': 'hidden'}),
+                                     id='div_dropdown_line_2',
+                                     # style={'padding': '1px', 'min-width': '200px'}
+                                 )],
+                             style={'display': 'flex', 'flex-direction': 'row',
+                                    'flex-wrap': 'wrap',
+                                    'justify-content': 'left'},
+                         ),
+                         html.Div(
+                             [html.Div(
+                                 [
+                                     dcc.Store(id='append_check'),
+                                     html.Div(
+                                         [html.Div(
+                                             children=dbc.DropdownMenu(
+                                                 id='checklist_dropdown',
+                                                 children=[
+                                                     dbc.Checklist(
+                                                         id='data_checklist',
+                                                         # input_checked_class_name='checkbox',
+                                                         style={
+                                                             'max-height': '400px',
+                                                             'overflow': 'auto'})],
+                                                 toggle_style={
+                                                     'textTransform': 'none',
+                                                     'background': '#fff',
+                                                     'border': '#ccc',
+                                                     'letter-spacing': '0',
+                                                     'font-size': '11px',
+                                                 },
+                                                 align_end=True,
+                                                 toggle_class_name='dropdown_input',
+                                                 label="Select Cells"), ),
+                                             html.Button('Clear All', id='clear_all_button',
+                                                         className='local_data_buttons'),
+                                             html.Button('Select All',
+                                                         id='select_all_button',
+                                                         className='local_data_buttons'),
+                                             html.Button('Export to Table',
+                                                         id='export_b',
+                                                         className='local_data_buttons'),
+                                             html.Button('Append to Table',
+                                                         id='append_b',
+                                                         className='local_data_buttons'),
+                                             html.Button('Clear Table', id='clear_table_b',
+                                                         className='local_data_buttons')],
+                                         style={
+                                             'display': 'flex',
+                                             'flex-wrap': 'wrap',
+                                             'margin-bottom': '5px'}
+                                     )],
+                                 # style={'width': '200px'}
+                             ),
+                                 dcc.Store(id='cells_data')],
+                             style={'display': 'flex', 'flex-direction': 'column',
+                                    'justify-content': 'left'}),
+                         dbc.Spinner(dcc.Graph(id='line_graph'),
+                                     spinner_class_name='loading_spinner',
+                                     fullscreen_class_name='loading_spinner_bg')],
+                        className="pretty_container",
+                        style={'display': 'flex', 'flex-direction':
+                            'column', 'justify-content': 'space-evenly'}
+                    )],
+                id='right-column', className='col-12 col-lg-8 mb-2')],
+        className="row",
+        style={'justify-content': 'space-evenly'}),
+
+    # Data Table created from "Plots"
+    html.Div(dt.DataTable(id='table', editable=True,
+                          column_selectable='multi'),
+             # columns=[{'filter_options': 'sensitive'}]),
+             id='div_table', style={'overflow': 'auto',
+                                    'position': 'relative',
+                                    # 'margin': '0 0.05% 0 0.7%'
+                                    },
+             className='pretty_container'),
+
+    # Bottom, Links to GitHub,...
+    html.Div(
+        html.Div([
+            html.A('Source code:'),
+            html.A('web interface',
+                   href='https://www.github.com/zbt-tools/pemfc-dash-app',
+                   target="_blank"),
+            html.A("fuel cell model",
+                   href='https://www.github.com/zbt-tools/pemfc-core',
+                   target="_blank")],
             id='github_links',
             style={'overflow': 'auto',
                    'position': 'relative',
                    'justify-content': 'space-evenly',
                    'align-items': 'center',
                    'min-width': '30%',
-                   'display': 'flex'},
-         ),
-          # columns=[{'filter_options': 'sensitive'}]),
-          id='link_container',
-          style={'overflow': 'auto',
-                 'position': 'relative',
-                 'justify-content': 'center',
-                 'align-items': 'center',
-                 'display': 'flex'},
-          className='pretty_container')
-    ],
+                   'display': 'flex'}),
+        id='link_container',
+        style={'overflow': 'auto',
+               'position': 'relative',
+               'justify-content': 'center',
+               'align-items': 'center',
+               'display': 'flex'},
+        className='pretty_container')
+],
     id="mainContainer",
     # className='twelve columns',
     fluid=True,
@@ -305,21 +287,40 @@ app.layout = dbc.Container(
     prevent_initial_call=True
 )
 def run_simulation(signal, input_data, modal_state):
-    if signal is None:
+    """
+    ToDo: Documentation
+    Description:
+
+    @param signal:
+    @param input_data:
+    @param modal_state:
+    @return:
+    """
+
+    if signal is None:  # prevent_initial_call=True should be sufficient.
         raise PreventUpdate
     try:
+        # Initially get default simulation settings from settings.json file
+        # in pemfc core module
         pemfc_base_dir = os.path.dirname(pemfc.__file__)
         with open(os.path.join(pemfc_base_dir, 'settings', 'settings.json')) \
                 as file:
             settings = json.load(file)
+        # Change settings dictionary according to dashboard user input
         settings, name_lists = \
             data_transfer.gui_to_sim_transfer(input_data, settings)
-        global_data, local_data, sim = main_app.main(settings=settings)
+        # Avoid local outputs from simulation
+        settings['output']['save_csv'] = False
+        settings['output']['save_plot'] = False
+        # Run simulation
+        global_data, local_data, sim = main_app.main(settings=settings,
+                                                     save_settings=False)
     except Exception as E:
         modal_title, modal_body = \
             dm.modal_process('input-error', error=repr(E))
         return None, modal_title, modal_body, not modal_state
     return [global_data[0], local_data[0]], None, None, modal_state
+
 
 # def try_simulation_store(**kwargs):
 #     try:
@@ -336,19 +337,25 @@ def run_simulation(signal, input_data, modal_state):
     [State({'type': 'input', 'id': ALL, 'specifier': ALL}, 'value'),
      State({'type': 'multiinput', 'id': ALL, 'specifier': ALL}, 'value'),
      State({'type': 'input', 'id': ALL, 'specifier': ALL}, 'id'),
-     State({'type': 'multiinput', 'id': ALL, 'specifier': ALL}, 'id')]
-)
+     State({'type': 'multiinput', 'id': ALL, 'specifier': ALL}, 'id')],
+    prevent_initial_call=True)
 def generate_inputs(n_click, inputs, inputs2, ids, ids2):
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if 'run_button' in changed_id and n_click is not None:
-        dict_data = df.process_inputs(inputs, inputs2, ids, ids2)
+    """
+    #ToDO: Why seperation between run_simulation() and generate_inputs()
 
-        input_data = {}
-        for k, v in dict_data.items():
-            input_data[k] = {'sim_name': k.split('-'), 'value': v}
-        return input_data, n_click
-    else:
-        raise PreventUpdate
+    @param n_click:
+    @param inputs:
+    @param inputs2:
+    @param ids:
+    @param ids2:
+    @return:
+    """
+
+    dict_data = df.process_inputs(inputs, inputs2, ids, ids2)
+    input_data = {}
+    for k, v in dict_data.items():
+        input_data[k] = {'sim_name': k.split('-'), 'value': v}
+    return input_data, n_click
 
 
 @app.callback(
@@ -359,23 +366,20 @@ def generate_inputs(n_click, inputs, inputs2, ids, ids2):
     prevent_initial_call=True
 )
 def global_outputs_table(results):
-    if results is None:
-        raise PreventUpdate
-    else:
-        global_result_dict = results[0]
-        names = list(global_result_dict.keys())
-        values = [v['value'] for k, v in global_result_dict.items()]
-        units = [v['units'] for k, v in global_result_dict.items()]
+    global_result_dict = results[0]
+    names = list(global_result_dict.keys())
+    values = [v['value'] for k, v in global_result_dict.items()]
+    units = [v['units'] for k, v in global_result_dict.items()]
 
-        column_names = ['Quantity', 'Value', 'Units']
-        columns = [{'deletable': True, 'renamable': True,
-                    'selectable': True, 'name': col, 'id': col}
-                   for col in column_names]
-        datas = [{column_names[0]: names[i],
-                  column_names[1]: values[i],
-                  column_names[2]: units[i]} for i in range(len(values))]
+    column_names = ['Quantity', 'Value', 'Units']
+    columns = [{'deletable': True, 'renamable': True,
+                'selectable': True, 'name': col, 'id': col}
+               for col in column_names]
+    datas = [{column_names[0]: names[i],
+              column_names[1]: values[i],
+              column_names[2]: units[i]} for i in range(len(values))]
 
-        return columns, datas, 'csv',
+    return columns, datas, 'csv',
 
 
 @app.callback(
@@ -385,14 +389,11 @@ def global_outputs_table(results):
     prevent_initial_call=True
 )
 def get_dropdown_options_heatmap(results):
-    if results is None:
-        raise PreventUpdate
-    else:
-        local_data = results[1]
-        values = [{'label': key, 'value': key} for key in local_data
-                  if 'xkey' in local_data[key]
-                  and local_data[key]['xkey'] == 'Channel Location']
-        return values, 'Current Density'
+    local_data = results[1]
+    values = [{'label': key, 'value': key} for key in local_data
+              if 'xkey' in local_data[key]
+              and local_data[key]['xkey'] == 'Channel Location']
+    return values, 'Current Density'
 
 
 @app.callback(
@@ -402,12 +403,9 @@ def get_dropdown_options_heatmap(results):
     prevent_initial_call=True
 )
 def get_dropdown_options_line_graph(results):
-    if results is None:
-        raise PreventUpdate
-    else:
-        local_data = results[1]
-        values = [{'label': key, 'value': key} for key in local_data]
-        return values, 'Current Density'
+    local_data = results[1]
+    values = [{'label': key, 'value': key} for key in local_data]
+    return values, 'Current Density'
 
 
 @app.callback(
@@ -493,7 +491,7 @@ def update_heatmap_graph(dropdown_key, dropdown_key_2, results):
             z_title = dropdown_key + ' / ' + local_data[dropdown_key]['units']
         else:
             z_title = dropdown_key + ' / ' \
-                       + local_data[dropdown_key][dropdown_key_2]['units']
+                      + local_data[dropdown_key][dropdown_key_2]['units']
 
         # if n_y <= 20:
         #     height = 300
@@ -541,6 +539,7 @@ def update_heatmap_graph(dropdown_key, dropdown_key_2, results):
                 result = \
                     filter_tick_text(data, division['coarse']['value'])
             return result
+
         # y_tick_labels[-1] = str(n_y - 1)
 
         x_axis_dict = copy.deepcopy(base_axis_dict)
@@ -753,7 +752,7 @@ def list_to_table(n1, n2, n3, data_checklist, cells_data, results,
         xvalues = ip.interpolate_1d(np.asarray(local_data[x_key]['value']))
         data = [{**{x_key: cell},
                  **{cells_data[k]['name']: cells_data[k]['data'][num]
-                     for k in cells_data}}
+                    for k in cells_data}}
                 for num, cell in enumerate(xvalues)]  # list with nested dict
 
         if append_check is None:
@@ -762,7 +761,7 @@ def list_to_table(n1, n2, n3, data_checklist, cells_data, results,
             appended = append_check
 
         if 'export_b.n_clicks' in ctx:
-            return index+columns, data, 'csv', appended
+            return index + columns, data, 'csv', appended
         elif 'clear_table_b.n_clicks' in ctx:
             return [], [], 'none', appended
         elif 'append_b.n_clicks' in ctx:
@@ -774,13 +773,13 @@ def list_to_table(n1, n2, n3, data_checklist, cells_data, results,
                 app_columns = \
                     [{'deletable': True, 'renamable': True,
                       'selectable': True, 'name': 'Cell {}'.format(d),
-                      'id': 'Cell {}'.format(d) + '-'+str(appended)}
+                      'id': 'Cell {}'.format(d) + '-' + str(appended)}
                      for d in digit_list]
                 new_columns = table_columns + app_columns
                 app_datas = \
                     [{**{x_key: cell},
-                      **{cells_data[k]['name']+'-'+str(appended):
-                         cells_data[k]['data'][num]
+                      **{cells_data[k]['name'] + '-' + str(appended):
+                             cells_data[k]['data'][num]
                          for k in cells_data}}
                      for num, cell in enumerate(xvalues)]
                 new_data_list = []
@@ -836,7 +835,7 @@ def load_settings(contents, filename, value, multival, ids, ids2,
                     if k in id_match:
                         if isinstance(v, list):
                             for num, val in enumerate(v):
-                                dict_ids2[k+f'_{num}'] = df.check_ifbool(val)
+                                dict_ids2[k + f'_{num}'] = df.check_ifbool(val)
                         else:
                             dict_ids[k] = df.check_ifbool(v)
                     else:
@@ -873,13 +872,24 @@ def load_settings(contents, filename, value, multival, ids, ids2,
     [State({'type': 'input', 'id': ALL, 'specifier': ALL}, 'value'),
      State({'type': 'multiinput', 'id': ALL, 'specifier': ALL}, 'value'),
      State({'type': 'input', 'id': ALL, 'specifier': ALL}, 'id'),
-     State({'type': 'multiinput', 'id': ALL, 'specifier':  ALL}, 'id')],
+     State({'type': 'multiinput', 'id': ALL, 'specifier': ALL}, 'id')],
     prevent_initial_call=True,
 )
 def save_settings(n_clicks, val1, val2, ids, ids2):
-    ctx = dash.callback_context.triggered[0]['prop_id']
-    if 'save-button.n_clicks' in ctx:
-        dict_data = df.process_inputs(val1, val2, ids, ids2)  # values first
+    """
+
+    @param n_clicks:
+    @param val1:
+    @param val2:
+    @param ids:
+    @param ids2:
+    @return:
+    """
+    save_complete = True
+
+    dict_data = df.process_inputs(val1, val2, ids, ids2)  # values first
+
+    if not save_complete:  # ... save only GUI inputs
         sep_id_list = [joined_id.split('-') for joined_id in
                        dict_data.keys()]
 
@@ -898,7 +908,26 @@ def save_settings(n_clicks, val1, val2, ids, ids2):
         return dict(content=json.dumps(new_dict, sort_keys=True, indent=2),
                     filename='settings.json')
 
+    else:  # ... save complete settings as passed to pemfc simulation
+
+        # code portion of generate_inputs()
+        # ------------------------
+        input_data = {}
+        for k, v in dict_data.items():
+            input_data[k] = {'sim_name': k.split('-'), 'value': v}
+
+        # code portion of run_simulation()
+        # ------------------------
+
+        pemfc_base_dir = os.path.dirname(pemfc.__file__)
+        with open(os.path.join(pemfc_base_dir, 'settings', 'settings.json')) \
+                as file:
+            settings = json.load(file)
+        settings, _ = data_transfer.gui_to_sim_transfer(input_data, settings)
+
+        return dict(content=json.dumps(settings, indent=2),
+                    filename='settings.json')
+
 
 if __name__ == "__main__":
     app.run_server(debug=True, use_reloader=False)
-
